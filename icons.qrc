@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="rec">rsc/rec-icon.png</file>
+        <file alias="stop">rsc/stop-icon.png</file>
+    </qresource>
+</RCC>
