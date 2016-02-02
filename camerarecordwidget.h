@@ -28,8 +28,7 @@ public:
     void setPathToSaveMovie(const QString &pathToSaveMovie);
 
 private slots:
-    void on_startButton_clicked();
-    void on_stopButton_clicked();
+    void on_startStopButton_clicked();
 
     void showFrame(const QImage &frame);
 

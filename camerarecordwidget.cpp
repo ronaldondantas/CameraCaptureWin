@@ -49,7 +49,7 @@ CameraRecordWidget::CameraRecordWidget(QWidget *parent) :
     connect(m_cameraGrabber, SIGNAL(error(AbstractGrabber::Error)), this, SLOT(onGrabberError(AbstractGrabber::Error)));
     connect(m_audioGrabber, SIGNAL(error(AbstractGrabber::Error)), this, SLOT(onGrabberError(AbstractGrabber::Error)));
 
-    ui->startButton->setEnabled(true);
+    ui->startStopButton->setIcon(QIcon(":/rec"));
 }
 
 CameraRecordWidget::~CameraRecordWidget()
@@ -57,38 +57,34 @@ CameraRecordWidget::~CameraRecordWidget()
     delete ui;
 }
 
-void CameraRecordWidget::on_startButton_clicked()
+void CameraRecordWidget::on_startStopButton_clicked()
 {
-    if (ui->cbDevices->currentIndex() != -1) {
-        if (pathToSaveMovie().isEmpty()) {
-            setPathToSaveMovie(QFileDialog::getSaveFileName(this, tr("Escolha o local onde o "
-                                                                    "vídeo será salvo"),
-                                                            QDir::currentPath(),
-                                                            tr("Videos (*.avi)")));
-            m_recorder->encoder()->setFilePath(pathToSaveMovie());
+    if (m_recorder->state() == Recorder::StoppedState) {
+        ui->startStopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+        if (ui->cbDevices->currentIndex() != -1) {
+            if (pathToSaveMovie().isEmpty()) {
+                setPathToSaveMovie(QFileDialog::getSaveFileName(this, tr("Escolha o local onde o "
+                                                                        "vídeo será salvo"),
+                                                                QDir::currentPath(),
+                                                                tr("Videos (*.avi)")));
+                m_recorder->encoder()->setFilePath(pathToSaveMovie());
+            }
+            m_cameraGrabber->setDeviceIndex(ui->cbDevices->currentIndex());
+            m_recorder->encoder()->setVideoSize(CameraGrabber::maximumFrameSize(m_cameraGrabber->deviceIndex()));
+
+            connect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
+            m_recorder->start();
         }
-        m_cameraGrabber->setDeviceIndex(ui->cbDevices->currentIndex());
-        m_recorder->encoder()->setVideoSize(CameraGrabber::maximumFrameSize(m_cameraGrabber->deviceIndex()));
+    } else if (m_recorder->state() == Recorder::ActiveState) {
+        ui->startStopButton->setIcon(QIcon(":/rec"));
 
-        connect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
-        m_recorder->start();
+        disconnect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
+        m_recorder->stop();
 
-        ui->startButton->setEnabled(false);
-        ui->stopButton->setEnabled(true);
+        initFrameLabel();
+
+        emit recordFinished(pathToSaveMovie());
     }
-}
-
-void CameraRecordWidget::on_stopButton_clicked()
-{
-    disconnect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
-    m_recorder->stop();
-
-    ui->startButton->setEnabled(true);
-    ui->stopButton->setEnabled(false);
-
-    initFrameLabel();
-
-    emit recordFinished(pathToSaveMovie());
 }
 
 void CameraRecordWidget::showFrame(const QImage &frame)
