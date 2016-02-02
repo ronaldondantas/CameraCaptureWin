@@ -1,5 +1,5 @@
-#include "widget.h"
-#include "ui_widget.h"
+#include "camerarecordwidget.h"
+#include "ui_camerarecordwidget.h"
 
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -11,9 +11,9 @@
 #include <CameraGrabber>
 #include <AudioGrabber>
 
-Widget::Widget(QWidget *parent) :
+CameraRecordWidget::CameraRecordWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Widget)
+    ui(new Ui::CameraRecordWidget)
   , m_recorder(new Recorder(this))
   , m_cameraGrabber(new CameraGrabber(this))
   , m_audioGrabber(new AudioGrabber(this))
@@ -52,12 +52,12 @@ Widget::Widget(QWidget *parent) :
     ui->startButton->setEnabled(true);
 }
 
-Widget::~Widget()
+CameraRecordWidget::~CameraRecordWidget()
 {
     delete ui;
 }
 
-void Widget::on_startButton_clicked()
+void CameraRecordWidget::on_startButton_clicked()
 {
     if (ui->cbDevices->currentIndex() != -1) {
         if (pathToSaveMovie().isEmpty()) {
@@ -78,7 +78,7 @@ void Widget::on_startButton_clicked()
     }
 }
 
-void Widget::on_stopButton_clicked()
+void CameraRecordWidget::on_stopButton_clicked()
 {
     disconnect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
     m_recorder->stop();
@@ -91,26 +91,26 @@ void Widget::on_stopButton_clicked()
     emit recordFinished(pathToSaveMovie());
 }
 
-void Widget::showFrame(const QImage &frame)
+void CameraRecordWidget::showFrame(const QImage &frame)
 {
     ui->frameLabel->setPixmap(QPixmap::fromImage(frame));
 }
 
-void Widget::onEncoderError(Encoder::Error error)
+void CameraRecordWidget::onEncoderError(Encoder::Error error)
 {
     Q_UNUSED(error)
 
     qDebug()<<"Encoder's error number: "<<error;
 }
 
-void Widget::onGrabberError(AbstractGrabber::Error error)
+void CameraRecordWidget::onGrabberError(AbstractGrabber::Error error)
 {
     Q_UNUSED(error)
 
     qDebug()<<"Grabber's error number: "<<error;
 }
 
-void Widget::initFrameLabel()
+void CameraRecordWidget::initFrameLabel()
 {
     QImage blackImage(640, 480, QImage::Format_RGB888);
     blackImage.fill(Qt::black);
@@ -119,7 +119,7 @@ void Widget::initFrameLabel()
     ui->frameLabel->repaint();
 }
 
-VideoCodecSettings Widget::videoCodecSettings() const
+VideoCodecSettings CameraRecordWidget::videoCodecSettings() const
 {
     //x264 loseless fast preset
     VideoCodecSettings settings;
@@ -147,7 +147,7 @@ VideoCodecSettings Widget::videoCodecSettings() const
     return settings;
 }
 
-AudioCodecSettings Widget::audioCodecSettings() const
+AudioCodecSettings CameraRecordWidget::audioCodecSettings() const
 {
     AudioCodecSettings settings;
     settings.setSampleRate(m_audioGrabber->format().sampleRate());
@@ -157,12 +157,12 @@ AudioCodecSettings Widget::audioCodecSettings() const
     return settings;
 }
 
-QString Widget::pathToSaveMovie() const
+QString CameraRecordWidget::pathToSaveMovie() const
 {
     return m_pathToSaveMovie;
 }
 
-void Widget::setPathToSaveMovie(const QString &pathToSaveMovie)
+void CameraRecordWidget::setPathToSaveMovie(const QString &pathToSaveMovie)
 {
     m_pathToSaveMovie = pathToSaveMovie;
 }

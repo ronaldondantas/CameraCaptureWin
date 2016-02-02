@@ -24,12 +24,14 @@ CONFIG(debug, debug|release) {
     unix: LIBS += -lqtmel
 }
 
-SOURCES += main.cpp\
-        widget.cpp
+SOURCES += main.cpp \
+    camerarecordwidget.cpp
 
-HEADERS  += widget.h
+HEADERS  += \
+    camerarecordwidget.h
 
-FORMS    += widget.ui
+FORMS    += \
+    camerarecordwidget.ui
 
 RESOURCES += \
     icons.qrc

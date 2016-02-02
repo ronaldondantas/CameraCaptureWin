@@ -1,5 +1,5 @@
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef CAMERARECORDWIDGET_H
+#define CAMERARECORDWIDGET_H
 
 #include <QWidget>
 
@@ -9,20 +9,20 @@
 #include <AbstractGrabber>
 
 namespace Ui {
-class Widget;
+class CameraRecordWidget;
 }
 
 class Recorder;
 class CameraGrabber;
 class AudioGrabber;
 
-class Widget : public QWidget
+class CameraRecordWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit Widget(QWidget *parent = 0);
-    ~Widget();
+    explicit CameraRecordWidget(QWidget *parent = 0);
+    ~CameraRecordWidget();
 
     QString pathToSaveMovie() const;
     void setPathToSaveMovie(const QString &pathToSaveMovie);
@@ -42,7 +42,7 @@ private:
     VideoCodecSettings videoCodecSettings() const;
     AudioCodecSettings audioCodecSettings() const;
 
-    Ui::Widget *ui;
+    Ui::CameraRecordWidget *ui;
     Recorder *m_recorder;
     CameraGrabber *m_cameraGrabber;
     AudioGrabber *m_audioGrabber;
@@ -53,4 +53,4 @@ signals:
     void recordFinished(QString a_path);
 };
 
-#endif // WIDGET_H
+#endif // CAMERARECORDWIDGET_H
