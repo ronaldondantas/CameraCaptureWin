@@ -26,6 +26,12 @@ CameraRecordWidget::CameraRecordWidget(QWidget *parent) :
     m_cameraGrabber->setLatency(65);
     m_recorder->setImageGrabber(m_cameraGrabber);
 
+    if (ui->cbDevices->currentIndex() != -1) {
+        m_cameraGrabber->setDeviceIndex(ui->cbDevices->currentIndex());
+        connect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
+        m_cameraGrabber->start();
+    }
+
     //setup the audio grabber
     AudioFormat format;
     format.setChannelCount(2);
@@ -43,8 +49,6 @@ CameraRecordWidget::CameraRecordWidget(QWidget *parent) :
     m_recorder->encoder()->setAudioCodec(EncoderGlobal::MP3);
     m_recorder->encoder()->setOutputPixelFormat(EncoderGlobal::YUV420P);
 
-    initFrameLabel();
-
     connect(m_recorder->encoder(), SIGNAL(error(Encoder::Error)), this, SLOT(onEncoderError(Encoder::Error)));
     connect(m_cameraGrabber, SIGNAL(error(AbstractGrabber::Error)), this, SLOT(onGrabberError(AbstractGrabber::Error)));
     connect(m_audioGrabber, SIGNAL(error(AbstractGrabber::Error)), this, SLOT(onGrabberError(AbstractGrabber::Error)));
@@ -59,6 +63,10 @@ CameraRecordWidget::~CameraRecordWidget()
 
 void CameraRecordWidget::on_startStopButton_clicked()
 {
+    if (m_cameraGrabber->state() == CameraGrabber::ActiveState) { //RECORD
+        disconnect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
+        m_cameraGrabber->stop();
+    }
     if (m_recorder->state() == Recorder::StoppedState) {
         ui->startStopButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
         if (ui->cbDevices->currentIndex() != -1) {
@@ -75,14 +83,9 @@ void CameraRecordWidget::on_startStopButton_clicked()
             connect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
             m_recorder->start();
         }
-    } else if (m_recorder->state() == Recorder::ActiveState) {
+    } else if (m_recorder->state() == Recorder::ActiveState) { //STOP
         ui->startStopButton->setIcon(QIcon(":/rec"));
-
-        disconnect(m_cameraGrabber, SIGNAL(frameAvailable(QImage,int)), this, SLOT(showFrame(QImage)));
         m_recorder->stop();
-
-        initFrameLabel();
-
         emit recordFinished(pathToSaveMovie());
     }
 }
